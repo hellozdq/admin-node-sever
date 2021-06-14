@@ -4,7 +4,6 @@ var cookieParser = require('cookie-parser');
 var session = require("express-session");
 var logger = require('morgan');
 var vertoken = require('./common/token_vertify');
-var expressJwt = require('express-jwt');
 
 var loginRouter = require('./routes/login/index');
 var usersRouter = require('./routes/users');
@@ -67,24 +66,6 @@ app.use(function(req, res, next) {
 
 app.use('/login', loginRouter);
 app.use('/users', usersRouter);
-// 404
-app.use(function(req, res, next) {
-  console.log("----------------1<<,")
-  next(createError(404));
-});
-
-// app.use(function(req, res, next) {
-//   console.log("》》》》》》》》》》》》》》》")
-//   console.log("error.status")
-//   console.log(error.status)
-//   if (err.name === 'UnauthorizedError') { 
-//     res.status(401).send({code:-1,msg:'token错误'});
-// }
-//   if (err.status == 401) {
-// 		return res.status(401).send('token失效');
-// 	}
-//   // next(createError(404));
-// });
 
 
 module.exports = app;
