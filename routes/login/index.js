@@ -1,38 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const connect = require("../../model/index");
+const reqSql = require("../../model/index");
 const settoken = require('../../common/token_vertify');
+const rsaKey = require('../../common/rsaKey');
 
 //登录
-router.post('/', function(req, res) {
-	var username = 'slj';
-	var userid = "111";
-	settoken.setToken(username,userid).then((data)=>{
-		return res.json({ token: data });
-	})
-	return
-	console.log(req.session)
+router.post('/', (req, res) => {
 	const { account,password } = req.body;
 	if(!account){
-		res.status(400).json({msg:"账号不能为空"});
+		res.json({code:1,msg:"账号不能为空"});
 		return false;
 	}else if(!password){
-		res.status(400).json({msg:"密码不能为空"});
+		res.json({code:1,msg:"密码不能为空"});
 		return false;
 	}
-	
-	connect.query(`select * from user where account= ${ account }`, (err, result) => {
-		if(result.length==0||result[0].password!==password){
-			res.status(400).json({msg:"账号或密码不正确！"});
+	const pass = rsaKey.decryption(password);
+	const obj = {
+		sql:`select * from account where account= ${ account }`,
+		res
+	}
+	reqSql(obj)
+	.then((result) => {
+		if(result.length == 0 || result[0].password !== pass){
+			res.json({code:1, msg:"账号或密码不正确！"});
 			return false;
 		}else{
-			// console.log("req.session")
-			// console.log(req)
-			// req.session.admin_id = result[0].id;
-			res.json({msg:"登录成功！"});
+			settoken.setToken(result[0].id,result[0].account).then((data)=>{
+				return res.json({code:0, data:{token:data,id:result[0].id}, msg:"登录成功！"});
+			})
 		}
-				
 	})
+})
+
+router.get('/publicKey', (req, res) => {
+	console.log(rsaKey.publicKey)
+	res.json({code:0, data:rsaKey.publicKey});
 })
 
 module.exports = router;

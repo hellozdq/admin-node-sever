@@ -26,52 +26,43 @@ app.use(session({
 
 // 解析token获取用户信息
 app.use(function(req, res, next) {
-	var token = req.headers['authorization'];
-	if(token == undefined){
-    console.log("============>>111111")
-    res.status(403).send({ code: -1, msg: '无效的token' });
-		return next();
-	}else{
-		vertoken.verToken(token).then((data)=> {
-			req.data = data;
-			return next();
-		}).catch((error)=>{
-      console.log("error")
-      console.log(error)
-      switch (error.name) {
-        case 'JsonWebTokenError':
-          res.status(403).send({ code: -1, msg: '无效的token' });
-          break;
-        case 'TokenExpiredError':
-          res.status(403).send({ code: -1, msg: 'token过期' });
-          break;
-      }
-			return next();
-		})
-	}
+  const whiteList = ['/login','/login/publicKey'];
+  if(!whiteList.includes(req.path)){
+    const token = req.headers['authorization'];
+    if(token == undefined){
+      res.send({ code: -1, msg: '无效的token' });
+      return next();
+    }else{
+      vertoken.verToken(token).then((data)=> {
+        req.data = data;
+        return next();
+      }).catch((error)=>{
+        switch (error.name) {
+          case 'JsonWebTokenError':
+            res.send({ code: -1, msg: '无效的token' });
+            break;
+          case 'TokenExpiredError':
+            res.send({ code: -1, msg: 'token过期' });
+            break;
+        }
+        return next();
+      })
+    }
+  }else{
+    return next();
+  }
+ 
 });
 
-// 登陆判断
-// app.use(function(err, req, res, next) {
-//   if(!req.session['admin_id'] && req.url!='/login'&& req.url!='/register'&& arr!='/captcha'&& arr!='/logout'&&arr!='/upload/img'){ //没有登录
-//     res.status(401).json("登录失效")
-//     // res.status(401).redirect('/login');
-//   }else{
-//     next();
-//   }
 
-//   // render the error page
-//   // res.status(err.status || 500).json("请求失败");
-//   // res.render('error');
-// });
 
-//验证token是否过期并规定哪些路由不用验证
-app.use(expressJwt({
-	secret: 'mes_qdhd_mobile_xhykjyxgs',
-  algorithms: ['HS256']
-}).unless({
-	path: ['/login']//除了这个地址，其他的URL都需要验证
-}));
+// //验证token是否过期并规定哪些路由不用验证
+// app.use(expressJwt({
+// 	secret: 'mes_qdhd_mobile_xhykjyxgs',
+//   algorithms: ['HS256']
+// }).unless({
+// 	path: ['/login','/login/publicKey]//除了这个地址，其他的URL都需要验证
+// }));
 
 
 app.use('/login', loginRouter);
