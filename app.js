@@ -6,7 +6,7 @@ var logger = require('morgan');
 var vertoken = require('./common/token_vertify');
 
 var loginRouter = require('./routes/login/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/user/index');
 
 var app = express();
 
@@ -27,18 +27,21 @@ app.use(session({
 app.use(function(req, res, next) {
   const whiteList = ['/login','/login/publicKey'];
   if(!whiteList.includes(req.path)){
-    const token = req.headers['authorization'];
+    const token = req.headers['token'];
+    console.log(token);
     if(token == undefined){
-      res.send({ code: -1, msg: '无效的token' });
+      res.send({ code: -1, msg: 'token不能为空' });
       return next();
     }else{
       vertoken.verToken(token).then((data)=> {
         req.data = data;
         return next();
       }).catch((error)=>{
+        console.log("--------------112")
+        console.log(error)
         switch (error.name) {
           case 'JsonWebTokenError':
-            res.send({ code: -1, msg: '无效的token' });
+            res.send({ code: -1, msg: '无效token' });
             break;
           case 'TokenExpiredError':
             res.send({ code: -1, msg: 'token过期' });
@@ -65,7 +68,7 @@ app.use(function(req, res, next) {
 
 
 app.use('/login', loginRouter);
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 
 
 module.exports = app;

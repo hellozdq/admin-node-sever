@@ -13,7 +13,7 @@ exports.setToken = function(username,userid){
 
 exports.verToken = function(token){
 	return new Promise((resolve,reject)=>{
-		var info = jwt.verify(token.split(' ')[1],signkey);
+		var info = jwt.verify(token,signkey);
 		resolve(info);
 	})
 }
