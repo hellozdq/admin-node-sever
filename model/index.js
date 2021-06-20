@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 const config = require('./config');//数据库链接信息
 
-console.log("=========>>")
 // 连接数据库
 const connect = mysql.createConnection(config.mysql);
 connect.connect();
