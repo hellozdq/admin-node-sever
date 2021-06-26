@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const reqSql = require("../../model/index");
-const settoken = require('../../common/token_vertify');
-const rsaKey = require('../../common/rsaKey');
 
 //查询列表
 router.post('/list', (req, res) => {
@@ -14,7 +12,7 @@ router.post('/list', (req, res) => {
 		res.json({code:1,msg:"页码必须传"});
 		return false;
 	}
-	let sql = `SELECT u.id,a.account,u.name,u.phone,u.roles FROM user u JOIN account a on u.relId=a.id  WHERE 1=1`
+	let sql = `SELECT u.id,a.account,a.id accountId,u.name,u.phone,u.roles FROM user u JOIN account a on u.relId=a.id  WHERE 1=1`
 	if(name){
 		sql += ` AND u.name like '%${name}%'`
 	}
@@ -53,6 +51,26 @@ router.put('/updateUser', (req, res) => {
 	reqSql(obj)
 	.then((result) => {
 		return res.json({code:0, data:{msg:"修改成功！"}});
+	})
+})
+
+// 删除用户 
+router.delete('/deleteUser', (req, res) => {
+	const { id, accountId } = req.body;
+	if(!id){
+		res.json({code:1,msg:"用户id必须传"});
+		return false;
+	}else if(!accountId){
+		res.json({code:1,msg:"账户id必须传"});
+		return false;
+	}
+	const obj = {
+		sql:`DELETE FROM user WHERE id=${id};DELETE FROM account WHERE id=${accountId};`,
+		res
+	}
+	reqSql(obj)
+	.then((result) => {
+		return res.json({code:0, data:{msg:"删除成功！"}});
 	})
 })
 

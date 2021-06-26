@@ -37,8 +37,6 @@ app.use(function(req, res, next) {
         req.data = data;
         return next();
       }).catch((error)=>{
-        console.log("--------------112")
-        console.log(error)
         switch (error.name) {
           case 'JsonWebTokenError':
             res.send({ code: -1, msg: '无效token' });
